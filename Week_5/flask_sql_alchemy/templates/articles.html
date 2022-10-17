@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+<body>
+    <h1>Articles</h1>
+    {% for article in articles %}
+        <div class="article_list">
+            <div class="article_item">
+                <h3>{{ article["title"] }}</h3>
+                <div class="author_box">
+                <p>| &nbsp;</p>
+                {% for author in article["authors"] %}
+                    
+                        <p>{{ author["user_name"] }}&nbsp; | &nbsp;</p>
+                    
+                {% endfor %}
+                </div>
+                <p class="about_item">{{ article["content"] }}</p>
+            </div>
+        </div>
+    {% endfor %}
+</body>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+    *{
+        font-family: 'Poppins', sans-serif;
+    }
+    body{
+    font-family: "Poppins", sans-serif;
+    }
+
+    h1{
+        text-align: center;
+        color: black;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 3em;
+    }
+
+    .article_list{
+        display: flex;
+        text-align: center;
+        padding: 32px;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .article_item{
+        text-align: center;
+        vertical-align: middle;
+        background-color: #e9ddff;
+        padding: 32px;
+        border-radius: 32px;
+        transition: 0.2s ease-out;
+    }
+
+    .article_item .about_item{
+        display: block;
+        text-align: center;
+        background-color: #1e192b;
+        color: #EADDFF;
+        width: fit-content;
+        padding: 16px 32px;
+        border-radius: 16px;
+        transition: 0.2s ease-out;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 8px;
+    }
+
+    .article_item .author_box{
+        display: inline-flex;
+        background-color: #31111D;
+        color: #FFD8E4;
+        width: fit-content;
+        padding: 4px 8px;
+        border-radius: 16px;
+        transition: 0.2s ease-out;
+    }
+
+    @media only screen and (max-width: 600px) {
+        .article_item{
+            display: block;
+            width: 80%;
+        }
+    }
+    .article_item:hover{
+        cursor: pointer;
+        border-radius: 16px;
+    }
+
+    .article_item:hover .about_item{
+        border-radius: 8px;
+    }
+
+    .article_item:hover .author_box{
+        border-radius: 8px;
+    }
+
+    h3{
+        color: #041E49;
+        margin: 0px 0px 8px;
+        font-size: 32px;
+    }
+</style>
+</html>

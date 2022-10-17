@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Update Student</title>
+  </head>
+  <body>
+    <h1>Update Student</h1>
+    <form
+      action="/student/{{current_id}}/update"
+      method="POST"
+      id="update-form"
+    >
+      <div>
+        <label>Roll Number:</label>
+        <input type="text" name="roll" value="{{current_roll}}" disabled />
+      </div>
+      <br />
+      <div>
+        <label>First Name:</label>
+        <input type="text" name="f_name" value="{{current_fname}}" required />
+      </div>
+      <br />
+      <div>
+        <label>Last Name:</label>
+        <input type="text" name="l_name" value="{{current_lname}}" />
+      </div>
+      <br />
+      <div>
+        <label>Select Courses: </label>
+
+        {% if 1 in current_courses %}
+        <input type="checkbox" name="courses" value="course_1" checked />
+        <label>MAD I</label>
+        {% else %}
+        <input type="checkbox" name="courses" value="course_1" />
+        <label>MAD I</label>
+        {% endif %}
+
+        {% if 2 in current_courses %}
+        <input type="checkbox" name="courses" value="course_2" checked />
+        <label>DBMS</label>
+        {% else %}
+        <input type="checkbox" name="courses" value="course_2" />
+        <label>DBMS</label>
+        {% endif %} 
+
+        {% if 3 in current_courses %}
+        <input type="checkbox" name="courses" value="course_3" checked />
+        <label>PDSA</label>
+        {% else %}
+        <input type="checkbox" name="courses" value="course_3" />
+        <label>PDSA</label>
+        {% endif %} 
+        
+        {% if 4 in current_courses %}
+        <input type="checkbox" name="courses" value="course_4" checked />
+        <label>BDM</label>
+        {% else %}
+        <input type="checkbox" name="courses" value="course_4" />
+        <label>BDM</label>
+        {% endif %}
+      </div>
+      <br />
+      <div>
+        <input type="submit" value="Submit" />
+      </div>
+    </form>
+  </body>
+</html>
