@@ -143,7 +143,7 @@ class StudentAPI(Resource):
                     "first_name": old_student.first_name,
                     "last_name": old_student.last_name,
                     "roll_number": old_student.roll_number
-                }, 201
+                }, 200
     
     def delete(self, student_id):
         old_student = Student.query.get(student_id)
@@ -210,7 +210,59 @@ class CourseAPI(Resource):
                             "course_code": new_course.course_code,
                             "course_description": new_course.course_description
                 }, 201
+    
+    def put(self, course_id):
+        old_course = Course.query.get(course_id)
+        
+        args = course_args.parse_args()
 
+        if args.get("course_name", None) == None:
+            return {
+                "error_code": "COURSE001",
+                "error_message": "Course Name is required"
+            }, 400
+        elif args.get("course_code", None) == None:
+            return {
+                "error_code": "COURSE002",
+                "error_message": "Course Code is required"
+            }, 400
+
+        if old_course is None:
+            return abort(404, message = "Course not found")
+
+        old_course.course_name = args['course_name']
+        old_course.course_code = args['course_code']
+        old_course.course_description = args['course_description']
+
+        if  Course.query.filter_by(course_code = old_course.course_code and course_id != old_course.course_id).first() is not None:
+            return abort(409, message = "Course already exist")
+        else:
+            try:
+                db.session.add(old_course)
+            except:
+                return abort(500, message = "Internal Server Error")
+            else:
+                db.session.commit()
+                return {
+                            "course_id": old_course.course_id,
+                            "course_name": old_course.course_name,
+                            "course_code": old_course.course_code,
+                            "course_description": old_course.course_description
+                }, 200
+    
+    def delete(self, course_id):
+        old_course = Course.query.get(course_id)
+
+        if old_course is None:
+            return abort(404, message = "Course not found")
+        
+        try:
+            db.session.delete(old_course)
+        except:
+            return abort(500, message = "Internal Server Error")
+        else:
+            db.session.commit()
+            return "Successfully Deleted", 200
     
 
 
