@@ -48,6 +48,9 @@ class Enrollment(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey("student.student_id"), nullable = False)
     course_id = db.Column(db.Integer, db.ForeignKey("course.course_id"), nullable = False)
 
+enrollment_args = reqparse.RequestParser()
+enrollment_args.add_argument("course_id", type = int)
+
 # API
 
 # Student
@@ -263,11 +266,137 @@ class CourseAPI(Resource):
         else:
             db.session.commit()
             return "Successfully Deleted", 200
+
+class EnrollmentAPI(Resource):
+    def get(self, student_id):
+        try:
+            student = Student.query.get(student_id)
+        except:
+            return abort(500, message = "Internal server error")
+        else:
+            if student is None:
+                return {
+                            "error_code": "ENROLLMENT002",
+                            "error_message": "Student does not exist."
+                }, 400
+        
+
+            enrollment_list = Enrollment.query.filter_by(student_id = student_id).all()
+            if enrollment_list == []:
+                return abort(404, message = "Student is not enrolled in any course")
+            
+            json = []
+            for enrollment in enrollment_list:
+                json.append(
+                    {
+                        "enrollment_id": enrollment.enrollment_id,
+                        "student_id": enrollment.student_id,
+                        "course_id": enrollment.course_id
+                    }
+                )
+            
+            return json, 200
     
+    def post(self, student_id):
+        args = enrollment_args.parse_args()
+
+        if args.get("course_id", None) == None:
+            return {
+                        "error_code": "ENROLLMENT001",
+                        "error_message": "Course does not exist"
+            }, 400
+        else:
+            try:
+                course = Course.query.get(int(args["course_id"]))
+            except:
+                return abort(500, message = "Internal server error")
+            else:
+                if course is None:
+                    return {
+                            "error_code": "ENROLLMENT001",
+                            "error_message": "Course does not exist"
+                    }, 400 
+        
+        try:
+            student = Student.query.get(student_id)
+        except:
+            return abort(500, message = "Internal server error")
+        else:
+            if student is None:
+                return {
+                            "error_code": "ENROLLMENT002",
+                            "error_message": "Student does not exist."
+                }, 400
+
+        new_enrollment = Enrollment(
+            student_id = student_id,
+            course_id = args["course_id"]
+        )
+
+        enrollment = Enrollment.query.filter_by(student_id = student_id, course_id = args["course_id"]).all()
+
+        if enrollment == []:
+            return abort(404, message = "Enrollment already exists")
+
+        try:
+            db.session.add(new_enrollment)
+        except:
+            return abort(500, "Internal Server Error")
+        else:
+            db.session.commit()
+            json = []
+            json.append(
+                {
+                    "enrollment_id": new_enrollment.enrollment_id,
+                    "student_id": new_enrollment.student_id,
+                    "course_id": new_enrollment.course_id
+                }
+            )
+
+            return json, 201
+    
+    def delete(self, student_id, course_id):
+        try:
+            course = Course.query.get(course_id)
+        except:
+            return abort(500, message = "Internal server error")
+        else:
+            if course is None:
+                return {
+                        "error_code": "ENROLLMENT001",
+                        "error_message": "Course does not exist"
+                }, 400
+        
+        try:
+            student = Student.query.get(student_id)
+        except:
+            return abort(500, message = "Internal server error")
+        else:
+            if student is None:
+                return {
+                            "error_code": "ENROLLMENT002",
+                            "error_message": "Student does not exist."
+                }, 400
+        
+        enrollment = Enrollment.query.filter_by(student_id = student_id, course_id = course_id).all()
+
+        if enrollment == []:
+            return abort(404, message = "Enrollment for the student not found")
+        
+        try:
+            db.session.delete(enrollment[0])
+        except:
+            return abort(500, message = "Internal Server Error")
+        else:
+            db.session.commit()
+            return "Successfully deleted", 200
+
+
 
 
 api.add_resource(StudentAPI, "/api/student", "/api/student/<int:student_id>")
 api.add_resource(CourseAPI, "/api/course", "/api/course/<int:course_id>")
+api.add_resource(EnrollmentAPI, "/api/student/<int:student_id>/course", "/api/student/<int:student_id>/course/<int:course_id>")
 
 if __name__ == "__main__":
     app.run(
