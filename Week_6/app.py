@@ -38,6 +38,11 @@ class Course(db.Model):
     course_code = db.Column(db.String, unique = True, nullable = False)
     course_description = db.Column(db.String)
 
+course_args = reqparse.RequestParser()
+course_args.add_argument("course_name", type = str)
+course_args.add_argument("course_code", type = str)
+course_args.add_argument("course_description", type = str)
+
 class Enrollment(db.Model):
     enrollment_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     student_id = db.Column(db.Integer, db.ForeignKey("student.student_id"), nullable = False)
@@ -52,7 +57,7 @@ class StudentAPI(Resource):
         try:
             student = Student.query.get(student_id)
         except:
-            abort(500, message = "Internal server error")
+            return abort(500, message = "Internal server error")
 
         if student is not None:
             return {
@@ -62,7 +67,7 @@ class StudentAPI(Resource):
                     "roll_number": student.roll_number
                 }, 200
         else:
-            abort(404, message = "Student not found")
+            return abort(404, message = "Student not found")
 
     
     def post(self):
@@ -86,12 +91,12 @@ class StudentAPI(Resource):
         )
 
         if Student.query.filter_by(roll_number = new_student.roll_number).first() is not None:
-            abort(409, message = "Student already exist")
+            return abort(409, message = "Student already exist")
         else:
             try:
                 db.session.add(new_student)
             except:
-                abort(500, message = "Internal Server Error")
+                return abort(500, message = "Internal Server Error")
             else:
                 db.session.commit()
                 return {
@@ -154,9 +159,63 @@ class StudentAPI(Resource):
             db.session.commit()
             return "Successfully Deleted", 200
     
+class CourseAPI(Resource):
+    def get(self, course_id):
+        try:
+            course = Course.query.get(course_id)
+        except:
+            return abort(500, "Internal Server Error")
+        else:
+            if course is not None:
+                return {
+                            "course_id": course.course_id,
+                            "course_name": course.course_name,
+                            "course_code": course.course_code,
+                            "course_description": course.course_description
+                }, 200
+            else:
+                return abort(404, message = "Course not found")
+    
+    def post(self):
+        args = course_args.parse_args()
+        if args.get("course_name", None) == None:
+            return {
+                "error_code": "COURSE001",
+                "error_message": "Course Name is required"
+            }, 400
+        elif args.get("course_code", None) == None:
+            return {
+                "error_code": "COURSE002",
+                "error_message": "Course Code is required"
+            }, 400
+
+        new_course = Course(
+            course_name = args["course_name"],
+            course_code = args["course_code"],
+            course_description = args["course_description"]
+        )
+
+        if Course.query.filter_by(course_code = args["course_code"]).first() is not None:
+            return abort(409, message = "course_code already exist")
+        else:
+            try:
+                db.session.add(new_course)
+            except:
+                return abort(500, "Internal Server Error")
+            else:
+                db.session.commit()
+                return {
+                            "course_id": new_course.course_id,
+                            "course_name": new_course.course_name,
+                            "course_code": new_course.course_code,
+                            "course_description": new_course.course_description
+                }, 201
+
+    
 
 
 api.add_resource(StudentAPI, "/api/student", "/api/student/<int:student_id>")
+api.add_resource(CourseAPI, "/api/course", "/api/course/<int:course_id>")
 
 if __name__ == "__main__":
     app.run(
