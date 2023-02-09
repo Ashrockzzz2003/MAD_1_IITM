@@ -1,10 +1,16 @@
+import os
 from flask import Flask
 from flask_restful import Resource, Api, abort, reqparse, marshal_with, fields
 from flask_sqlalchemy import SQLAlchemy
-# from flask_cors import CORS
+from flask_cors import CORS
+
+
+current_dir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///api_database.sqlite3'
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///" + os.path.join(
+    current_dir, "api_database.sqlite3"
+)
 
 db = SQLAlchemy()
 db.init_app(app)
@@ -13,7 +19,7 @@ app.app_context().push()
 # API init
 api = Api(app)
 
-# CORS(app)
+CORS(app)
 
 class Student(db.Model):
     student_id = db.Column(db.Integer, primary_key = True, autoincrement = True)
@@ -393,4 +399,6 @@ api.add_resource(CourseAPI, "/api/course", "/api/course/<int:course_id>")
 api.add_resource(EnrollmentAPI, "/api/student/<int:student_id>/course", "/api/student/<int:student_id>/course/<int:course_id>")
 
 if __name__ == "__main__":
-    app.run()
+    app.run(
+        debug=True
+    )
